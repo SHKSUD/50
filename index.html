@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Golden Jubilee | Dr LALATENDU MAHAPTRA</title>
+    <title>The Golden Jubilee | Dr LALATENDU MAHAPATRA</title>
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@100;300;400&family=Noto+Serif+Devanagari:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -149,6 +149,13 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3));
+            animation: textGlow 4s infinite alternate;
+        }
+
+        @keyframes textGlow {
+            0% { filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3)); }
+            50% { filter: drop-shadow(0 4px 30px rgba(255, 220, 100, 0.8)); }
+            100% { filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3)); }
         }
 
         .big-number {
@@ -239,11 +246,13 @@
 
         .footer-name {
             font-family: var(--font-accent);
-            font-size: clamp(2rem, 5vw, 4.5rem);
+            font-size: clamp(1.2rem, 3vw, 2.2rem);
             background: linear-gradient(to right, #fff, var(--gold-mid), #fff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 1rem 0;
+            letter-spacing: 2px;
+            font-weight: 400;
         }
 
         .btn-celebrate {
@@ -318,7 +327,7 @@
     <section class="footer">
         <span class="eyebrow" style="margin-bottom: 0;">Wishes from </span>
         <h2 class="footer-name">Me Madhav Meenu</h2>
-        <p style="font-family: var(--font-sans); font-weight: 30; letter-spacing: 3px; color: rgba(255,255,255,0.5);">HALF A CENTURY OF LIGHT</p>
+        <p style="font-family: var(--font-sans); font-weight: 30; letter-spacing: 3px; color: rgba(255,255,255,0.5); font-size: 0.7rem; margin-top: 0.5rem;">HALF A CENTURY OF LIGHT</p>
         <button class="btn-celebrate" onclick="launchCelebration(event)">Celebrate Their Legacy</button>
     </section>
 
@@ -339,6 +348,8 @@
         const mCtx = magicCanvas.getContext('2d');
         let magicParticles = [];
         let fireworks = [];
+        let magicRipples = [];
+        let shootingStars = [];
         let globalMouseX = -1000, globalMouseY = -1000;
 
         function resizeMagic() {
@@ -362,11 +373,19 @@
             }
         });
 
-        function createExplosion(x, y) {
+        // Add interactive ripples and mini-bursts on click everywhere
+        window.addEventListener('mousedown', (e) => {
+            if (e.target.tagName.toLowerCase() !== 'button' && e.target.id !== 'music-btn' && e.target.closest('#music-btn') === null) {
+                magicRipples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 1 });
+                createExplosion(e.clientX, e.clientY, 12); // Mini magical burst
+            }
+        });
+
+        function createExplosion(x, y, count = 150) {
             const colors = ['#d4af37', '#f9e29f', '#ffffff', '#ffcf40'];
-            for(let i=0; i<150; i++) {
+            for(let i=0; i<count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 15 + 5;
+                const speed = Math.random() * (count === 150 ? 15 : 6) + (count === 150 ? 5 : 2);
                 fireworks.push({
                     x: x, y: y,
                     vx: Math.cos(angle) * speed,
@@ -381,6 +400,42 @@
         function animateMagicSystem() {
             mCtx.clearRect(0, 0, magicCanvas.width, magicCanvas.height);
             
+            // Shooting Stars Generator
+            if (Math.random() < 0.015) {
+                shootingStars.push({
+                    x: Math.random() * window.innerWidth * 1.5, y: -50,
+                    vx: -15 - Math.random() * 10, vy: 15 + Math.random() * 10,
+                    life: 1, size: Math.random() * 2 + 1
+                });
+            }
+
+            // Draw Shooting Stars
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const s = shootingStars[i];
+                s.x += s.vx; s.y += s.vy; s.life -= 0.01;
+                if (s.life <= 0 || s.y > magicCanvas.height || s.x < 0) { shootingStars.splice(i, 1); continue; }
+                
+                mCtx.beginPath();
+                const grad = mCtx.createLinearGradient(s.x, s.y, s.x - s.vx * 4, s.y - s.vy * 4);
+                grad.addColorStop(0, `rgba(255, 255, 255, ${s.life})`);
+                grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+                mCtx.strokeStyle = grad; mCtx.lineWidth = s.size;
+                mCtx.moveTo(s.x, s.y); mCtx.lineTo(s.x - s.vx * 4, s.y - s.vy * 4); mCtx.stroke();
+                mCtx.fillStyle = `rgba(255, 255, 255, ${s.life})`;
+                mCtx.beginPath(); mCtx.arc(s.x, s.y, s.size * 1.5, 0, Math.PI*2); mCtx.fill();
+            }
+
+            // Draw Magic Ripples
+            for (let i = magicRipples.length - 1; i >= 0; i--) {
+                const r = magicRipples[i];
+                r.r += 6; r.alpha -= 0.02;
+                if (r.alpha <= 0) { magicRipples.splice(i, 1); continue; }
+                mCtx.strokeStyle = `rgba(212, 175, 55, ${r.alpha})`; mCtx.lineWidth = 2;
+                mCtx.beginPath(); mCtx.arc(r.x, r.y, r.r, 0, Math.PI*2); mCtx.stroke();
+                mCtx.strokeStyle = `rgba(249, 226, 159, ${r.alpha * 0.4})`;
+                mCtx.beginPath(); mCtx.arc(r.x, r.y, r.r + 15, 0, Math.PI*2); mCtx.stroke();
+            }
+
             // Draw Dust
             for (let i = magicParticles.length - 1; i >= 0; i--) {
                 const p = magicParticles[i];
@@ -509,7 +564,7 @@
                 fg.addColorStop(0, '#fff'); fg.addColorStop(0.5, '#f9e29f'); fg.addColorStop(1, '#d4af37');
                 // Special Soul particles
                 if (Math.random() > 0.6) {
-                    soulParticles.push({ x: cx, y: cy - 20, v: Math.random() * 2 + 1, o: 1, s: Math.random()*2+1 });
+                    soulParticles.push({ x: cx, y: cy - 20, v: Math.random() * 2 + 1, o: 1, s: Math.random()*2+1, angle: Math.random() * Math.PI * 2 });
                 }
             } else {
                 fg.addColorStop(0, '#fff'); fg.addColorStop(0.3, isHovered ? '#fff' : '#ffcf40'); fg.addColorStop(1, '#ff5f00');
@@ -528,7 +583,7 @@
 
             // Draw Soul Particles for 50th Diya
             soulParticles.forEach((p, index) => {
-                p.y -= p.v; p.x += Math.sin(p.y*0.05); p.o -= 0.01;
+                p.angle += 0.1; p.y -= p.v; p.x += Math.cos(p.angle) * 1.5; p.o -= 0.01;
                 if(p.o <= 0) { soulParticles.splice(index, 1); return; }
                 dCtx.save(); dCtx.setTransform(1,0,0,1,0,0);
                 dCtx.fillStyle = `rgba(255, 255, 255, ${p.o})`;
