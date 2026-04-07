@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Golden Jubilee | 50 Years</title>
+    <title>The Golden Jubilee | Dr LALATENDU MAHAPTRA</title>
     <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@100;300;400&family=Noto+Serif+Devanagari:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,7 +28,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Cinematic Grain & Vignette */
         .overlay {
             position: fixed;
             inset: 0;
@@ -47,7 +46,17 @@
             background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
-        /* Music Toggle Button */
+        /* Magic Interaction Canvas overlay */
+        #magic-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 150;
+        }
+
         .music-control {
             position: fixed;
             bottom: 30px;
@@ -56,8 +65,8 @@
             background: rgba(212, 175, 55, 0.15);
             border: 1px solid var(--gold-mid);
             color: var(--gold-mid);
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -67,16 +76,29 @@
             backdrop-filter: blur(5px);
         }
 
-        .music-control:hover {
-            background: var(--gold-mid);
-            color: var(--deep-black);
-            box-shadow: 0 0 15px var(--gold-mid);
+        .music-control::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 1px solid var(--gold-mid);
+            animation: pulse 2s infinite;
+            opacity: 0;
+        }
+        
+        .music-control:hover::before {
+            opacity: 1;
         }
 
-        /* Parallax Hero */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
         .hero {
             position: relative;
-            height: 100vh;
+            height: 110vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -114,37 +136,30 @@
             letter-spacing: 0.8rem;
             text-transform: uppercase;
             color: var(--gold-mid);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             display: block;
+        }
+
+        .names-display {
+            font-family: var(--font-accent);
+            font-size: clamp(2rem, 5vw, 4rem);
+            letter-spacing: 0.3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to bottom, #fff, var(--gold-mid));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3));
         }
 
         .big-number {
             font-family: var(--font-accent);
             font-size: clamp(120px, 25vw, 280px);
             line-height: 0.8;
-            background: linear-gradient(
-                to bottom,
-                var(--gold-light) 0%,
-                var(--gold-mid) 45%,
-                var(--gold-dark) 100%
-            );
+            background: linear-gradient(to bottom, var(--gold-light) 0%, var(--gold-mid) 45%, var(--gold-dark) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
             position: relative;
-        }
-
-        .big-number::after {
-            content: '50';
-            position: absolute;
-            left: 0;
-            top: 0;
-            z-index: -1;
-            filter: blur(40px);
-            background: linear-gradient(var(--gold-mid), var(--gold-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            opacity: 0.3;
         }
 
         .sanskrit-wish {
@@ -165,18 +180,8 @@
             opacity: 0.7;
         }
 
-        /* Divider */
-        .divider {
-            width: 1px;
-            height: 100px;
-            background: linear-gradient(to bottom, transparent, var(--gold-mid), transparent);
-            margin: 4rem 0;
-            opacity: 0.5;
-        }
-
-        /* Poem Section */
         .poem-section {
-            padding: 100px 20px;
+            padding: 120px 20px;
             max-width: 800px;
             margin: 0 auto;
             text-align: center;
@@ -192,18 +197,13 @@
             transform: translateY(20px);
         }
 
-        .poem-line.visible {
-            animation: fadeInLine 1.5s ease forwards;
-        }
+        .poem-line.visible { animation: fadeInLine 1.5s ease forwards; }
 
-        @keyframes fadeInLine {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInLine { to { opacity: 1; transform: translateY(0); } }
 
-        /* Diya Grid Section */
         .diya-container {
             background: #0a0a0c;
-            padding: 100px 0;
+            padding: 120px 0;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -226,9 +226,8 @@
             cursor: crosshair;
         }
 
-        /* Footer Section */
         .footer {
-            height: 60vh;
+            height: 80vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -261,51 +260,30 @@
             transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
             position: relative;
             overflow: hidden;
-        }
-
-        .btn-celebrate::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .btn-celebrate:hover::before {
-            left: 100%;
+            z-index: 200;
         }
 
         .btn-celebrate:hover {
             background: var(--gold-mid);
             color: var(--deep-black);
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
-        }
-
-        /* Confetti */
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            z-index: 1000;
-            pointer-events: none;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
 
     <div class="overlay"></div>
+    
+    <!-- Magic Overlay Canvas -->
+    <canvas id="magic-canvas"></canvas>
 
-    <!-- Background Music -->
     <audio id="bg-music" loop>
-        <!-- Replace the source with a nice traditional Indian flute or sitar track -->
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg">
     </audio>
 
     <div class="music-control" id="music-btn" title="Toggle Spiritual Music">
-        <svg id="music-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18V5l12-2v13"></path>
             <circle cx="6" cy="18" r="3"></circle>
             <circle cx="18" cy="16" r="3"></circle>
@@ -315,262 +293,277 @@
     <section class="hero">
         <canvas id="hero-canvas"></canvas>
         <div class="hero-content">
-            <span class="eyebrow">The Golden Jubilee</span>
+            <span class="eyebrow">A Special Celebration For</span>
+            <h2 class="names-display">Madhav & Lipu</h2>
             <h1 class="big-number">50</h1>
             <div class="sanskrit-wish">शतमञ्जय शरदो वर्धमानः</div>
-            <p class="tagline">Pashyema Sharadah Shatam — Live a Hundred Autumns</p>
-            <div class="divider" style="margin: 3rem auto;"></div>
+            <p class="tagline">Pashyema Sharadah Shatam — May you live a hundred years</p>
         </div>
     </section>
 
     <section class="poem-section">
-        <span class="poem-line">Fifty years of mornings earned with grace,</span>
-        <span class="poem-line" style="transition-delay: 0.2s">of laughter worn like candlelight on your face,</span>
-        <span class="poem-line" style="transition-delay: 0.4s">of courage carried softly through the years —</span>
-        <span class="poem-line" style="transition-delay: 0.6s">of joy that blooms and never disappears.</span>
-        <div class="divider" style="height: 40px; margin: 2rem auto;"></div>
+        <span class="poem-line">Fifty years of wisdom, Madhav and Lipu,</span>
+        <span class="poem-line" style="transition-delay: 0.2s">a journey of devotion, deep and true.</span>
+        <span class="poem-line" style="transition-delay: 0.4s">May these golden flames light your tomorrow,</span>
+        <span class="poem-line" style="transition-delay: 0.6s">with joy that banishes every sorrow.</span>
+        <div style="width: 50px; height: 1px; background: var(--gold-mid); margin: 3rem auto; opacity: 0.5;"></div>
         <span class="poem-line" style="transition-delay: 0.8s; font-family: var(--font-sanskrit); font-size: 1.5rem; color: var(--gold-mid);">जीवेम शरदः शतम्।</span>
     </section>
 
     <section class="diya-container">
-        <h2 class="section-title">Fifty Eternal Flames</h2>
+        <h2 class="section-title">50 Eternal Offerings</h2>
         <canvas id="diya-canvas"></canvas>
     </section>
 
     <section class="footer">
-        <span class="eyebrow" style="margin-bottom: 0;">With Deepest Love</span>
-        <h2 class="footer-name">Your Loved Ones</h2>
-        <p style="font-family: var(--font-sans); font-weight: 100; letter-spacing: 3px; color: rgba(255,255,255,0.5);">A LEGACY OF BRILLIANCE</p>
-        <button class="btn-celebrate" onclick="launchCelebration()">Celebrate Now</button>
+        <span class="eyebrow" style="margin-bottom: 0;">In Honor of</span>
+        <h2 class="footer-name">Madhav & Lipu</h2>
+        <p style="font-family: var(--font-sans); font-weight: 100; letter-spacing: 3px; color: rgba(255,255,255,0.5);">HALF A CENTURY OF LIGHT</p>
+        <button class="btn-celebrate" onclick="launchCelebration(event)">Celebrate Their Legacy</button>
     </section>
 
     <script>
-        /** * Background Music Logic */
+        // -- MUSIC LOGIC --
         const musicBtn = document.getElementById('music-btn');
         const audio = document.getElementById('bg-music');
         let isPlaying = false;
 
         musicBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                audio.pause();
-                musicBtn.style.boxShadow = 'none';
-            } else {
-                audio.play();
-                musicBtn.style.boxShadow = '0 0 20px var(--gold-mid)';
-            }
+            if (isPlaying) { audio.pause(); musicBtn.style.background = "rgba(212, 175, 55, 0.15)"; } 
+            else { audio.play(); musicBtn.style.background = "var(--gold-mid)"; musicBtn.style.color = "#000"; }
             isPlaying = !isPlaying;
         });
 
-        /** * Background Particle Engine (Hero) */
+        // -- MAGIC DUST & FIREWORKS ENGINE --
+        const magicCanvas = document.getElementById('magic-canvas');
+        const mCtx = magicCanvas.getContext('2d');
+        let magicParticles = [];
+        let fireworks = [];
+        let globalMouseX = -1000, globalMouseY = -1000;
+
+        function resizeMagic() {
+            magicCanvas.width = window.innerWidth;
+            magicCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeMagic);
+        resizeMagic();
+
+        window.addEventListener('mousemove', (e) => {
+            globalMouseX = e.clientX;
+            globalMouseY = e.clientY;
+            
+            // Add dust trail
+            if (Math.random() > 0.5) {
+                magicParticles.push({
+                    x: e.clientX, y: e.clientY,
+                    vx: (Math.random() - 0.5) * 2, vy: Math.random() * 2 + 1,
+                    life: 1, size: Math.random() * 3 + 1
+                });
+            }
+        });
+
+        function createExplosion(x, y) {
+            const colors = ['#d4af37', '#f9e29f', '#ffffff', '#ffcf40'];
+            for(let i=0; i<150; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 15 + 5;
+                fireworks.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1, decay: Math.random() * 0.015 + 0.005,
+                    size: Math.random() * 4 + 1,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+        }
+
+        function animateMagicSystem() {
+            mCtx.clearRect(0, 0, magicCanvas.width, magicCanvas.height);
+            
+            // Draw Dust
+            for (let i = magicParticles.length - 1; i >= 0; i--) {
+                const p = magicParticles[i];
+                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+                if (p.life <= 0) { magicParticles.splice(i, 1); continue; }
+                mCtx.fillStyle = `rgba(212, 175, 55, ${p.life})`;
+                mCtx.beginPath(); mCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); mCtx.fill();
+            }
+
+            // Draw Fireworks
+            for (let i = fireworks.length - 1; i >= 0; i--) {
+                const f = fireworks[i];
+                f.vy += 0.2; // gravity
+                f.x += f.vx; f.y += f.vy; f.life -= f.decay;
+                
+                if (f.life <= 0) { fireworks.splice(i, 1); continue; }
+                mCtx.fillStyle = f.color;
+                mCtx.globalAlpha = f.life;
+                mCtx.beginPath(); mCtx.arc(f.x, f.y, f.size, 0, Math.PI*2); mCtx.fill();
+            }
+            mCtx.globalAlpha = 1;
+            requestAnimationFrame(animateMagicSystem);
+        }
+        animateMagicSystem();
+
+        // -- HERO BACKGROUND ENGINE --
         const heroCanvas = document.getElementById('hero-canvas');
-        const heroCtx = heroCanvas.getContext('2d');
-        let particles = [];
+        const hCtx = heroCanvas.getContext('2d');
+        let heroParticles = [];
 
         function initHero() {
             heroCanvas.width = window.innerWidth;
             heroCanvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<120; i++) {
-                particles.push({
-                    x: Math.random() * heroCanvas.width,
-                    y: Math.random() * heroCanvas.height,
-                    size: Math.random() * 2 + 0.5,
-                    speed: Math.random() * 0.5 + 0.1,
-                    opacity: Math.random(),
-                    velX: (Math.random() - 0.5) * 0.5
-                });
-            }
+            heroParticles = Array.from({length: 120}, () => ({
+                x: Math.random() * heroCanvas.width, y: Math.random() * heroCanvas.height,
+                s: Math.random() * 2 + 0.5, v: Math.random() * 0.5 + 0.1
+            }));
         }
 
         function animateHero() {
-            heroCtx.clearRect(0,0, heroCanvas.width, heroCanvas.height);
-            particles.forEach(p => {
-                p.y -= p.speed;
-                p.x += p.velX;
-                if(p.y < -10) p.y = heroCanvas.height + 10;
-                if(p.x < 0 || p.x > heroCanvas.width) p.velX *= -1;
-                
-                heroCtx.beginPath();
-                heroCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-                heroCtx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`;
-                heroCtx.fill();
+            hCtx.clearRect(0,0,heroCanvas.width, heroCanvas.height);
+            heroParticles.forEach(p => {
+                p.y -= p.v; if(p.y < 0) p.y = heroCanvas.height;
+                hCtx.fillStyle = 'rgba(212, 175, 55, 0.4)';
+                hCtx.beginPath(); hCtx.arc(p.x, p.y, p.s, 0, Math.PI*2); hCtx.fill();
             });
             requestAnimationFrame(animateHero);
         }
 
-        /** * Diya Engine */
+        // -- DIYA ENGINE (Interactive Wind + 50th Special) --
         const diyaCanvas = document.getElementById('diya-canvas');
         const dCtx = diyaCanvas.getContext('2d');
-        const COLS = 10;
-        const ROWS = 5;
-        const CELL_W = 100;
-        const CELL_H = 110;
-        
-        let mouseX = -1000;
-        let mouseY = -1000;
-        let scaleFactor = 1;
+        const COLS = 10, ROWS = 5;
+        const CELL_W = 100, CELL_H = 120;
+        let dMouseX = -1000, dMouseY = -1000, scaleFactor = 1;
+        let soulParticles = [];
 
         function initDiya() {
-            const width = COLS * CELL_W;
-            const height = ROWS * CELL_H;
-            const screenW = window.innerWidth * 0.9;
-            scaleFactor = Math.min(1, screenW / width);
-            
-            diyaCanvas.width = width * scaleFactor;
-            diyaCanvas.height = height * scaleFactor;
+            const width = COLS * CELL_W; const height = ROWS * CELL_H;
+            scaleFactor = Math.min(1, (window.innerWidth * 0.95) / width);
+            diyaCanvas.width = width * scaleFactor; diyaCanvas.height = height * scaleFactor;
             dCtx.scale(scaleFactor, scaleFactor);
         }
 
-        diyaCanvas.addEventListener('mousemove', (e) => {
-            const rect = diyaCanvas.getBoundingClientRect();
-            mouseX = (e.clientX - rect.left) / scaleFactor;
-            mouseY = (e.clientY - rect.top) / scaleFactor;
+        diyaCanvas.addEventListener('mousemove', e => {
+            const r = diyaCanvas.getBoundingClientRect();
+            dMouseX = (e.clientX - r.left) / scaleFactor;
+            dMouseY = (e.clientY - r.top) / scaleFactor;
         });
+        diyaCanvas.addEventListener('mouseleave', () => { dMouseX = -1000; dMouseY = -1000; });
 
-        diyaCanvas.addEventListener('mouseleave', () => {
-            mouseX = -1000;
-            mouseY = -1000;
-        });
+        function drawDiya(x, y, time, i) {
+            const cx = x + CELL_W/2, cy = y + CELL_H/2 + 20;
+            const dist = Math.sqrt((dMouseX - cx)**2 + (dMouseY - cy)**2);
+            const isHovered = dist < 70;
+            const isSpecial = i === 49; // The 50th Diya
+            
+            const flicker = Math.sin(time * 0.01 + i) * (isHovered ? 8 : 4);
+            let glowR = (isHovered ? 40 : 20) + flicker;
+            if (isSpecial) glowR = (isHovered ? 65 : 35) + flicker;
 
-        function drawDiya(x, y, time, index) {
-            const centerX = x + CELL_W/2;
-            const centerY = y + CELL_H/2 + 20;
-            
-            // Hover Detection
-            const dist = Math.sqrt((mouseX - centerX)**2 + (mouseY - centerY)**2);
-            const isHovered = dist < 50;
-            
-            const flicker = Math.sin(time * 0.005 + index) * 5;
-            const glowSize = (isHovered ? 35 : 15) + Math.sin(time * 0.008 + index) * 5;
+            // Wind bending logic
+            let bendAngle = 0;
+            if (dist < 120) {
+                // Bend away from cursor
+                bendAngle = ((cx - dMouseX) / 120) * 0.5; 
+            }
 
             dCtx.save();
-            dCtx.translate(centerX, centerY);
+            dCtx.translate(cx, cy);
 
-            // 1. Shadow
+            // Shadow
             dCtx.beginPath();
-            dCtx.ellipse(0, 5, isHovered ? 25 : 20, 5, 0, 0, Math.PI*2);
-            dCtx.fillStyle = 'rgba(0,0,0,0.3)';
+            dCtx.ellipse(0, 5, 20, 5, 0, 0, Math.PI*2);
+            dCtx.fillStyle = 'rgba(0,0,0,0.4)';
             dCtx.fill();
 
-            // 2. Bowl (TerraCotta with Gold Rim)
-            const bowlGrad = dCtx.createLinearGradient(-20, 0, 20, 10);
-            bowlGrad.addColorStop(0, '#5d2306');
-            bowlGrad.addColorStop(0.5, '#8b3d16');
-            bowlGrad.addColorStop(1, '#5d2306');
-            
-            dCtx.beginPath();
-            dCtx.moveTo(-22, -2);
-            dCtx.bezierCurveTo(-22, 15, 22, 15, 22, -2);
-            dCtx.lineTo(25, -5);
-            dCtx.bezierCurveTo(25, -12, 18, -12, 15, -5);
-            dCtx.closePath();
-            dCtx.fillStyle = bowlGrad;
-            dCtx.fill();
-            
-            // Rim Highlight - Brightens on hover
-            dCtx.strokeStyle = isHovered ? '#fffb00' : '#d4af37';
-            dCtx.lineWidth = isHovered ? 2 : 1;
-            dCtx.stroke();
+            // Bowl
+            dCtx.beginPath(); dCtx.moveTo(-22, -2);
+            dCtx.bezierCurveTo(-22, 15, 22, 15, 22, -2); dCtx.closePath();
+            dCtx.fillStyle = isSpecial ? '#8b3d16' : '#5d2306'; dCtx.fill();
+            dCtx.strokeStyle = isSpecial ? '#fff' : (isHovered ? '#fffb00' : '#d4af37');
+            dCtx.lineWidth = isSpecial || isHovered ? 2 : 1; dCtx.stroke();
 
-            // 3. Flame Glow
-            const grad = dCtx.createRadialGradient(0, -15, 0, 0, -15, glowSize + 25);
-            grad.addColorStop(0, isHovered ? 'rgba(255, 220, 100, 0.7)' : 'rgba(255, 180, 50, 0.4)');
-            grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
-            dCtx.fillStyle = grad;
-            dCtx.beginPath();
-            dCtx.arc(0, -15, glowSize + 25, 0, Math.PI*2);
-            dCtx.fill();
+            // Glow
+            const g = dCtx.createRadialGradient(0, -15, 0, 0, -15, glowR);
+            g.addColorStop(0, isSpecial ? 'rgba(255,255,200,0.8)' : (isHovered ? 'rgba(255,220,100,0.7)' : 'rgba(255,150,50,0.5)'));
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            dCtx.fillStyle = g;
+            dCtx.beginPath(); dCtx.arc(0, -15, glowR, 0, Math.PI*2); dCtx.fill();
 
-            // 4. Flame Shape
+            // Flame (With Wind Bend)
             dCtx.translate(0, -15);
-            const fW = (isHovered ? 12 : 8) + Math.sin(time * 0.01 + index) * 1;
-            const fH = (isHovered ? 25 : 18) + flicker;
+            dCtx.rotate(bendAngle); // Apply Wind
 
-            dCtx.beginPath();
-            dCtx.moveTo(0, -fH);
-            dCtx.bezierCurveTo(fW, -fH/2, fW, 0, 0, 2);
-            dCtx.bezierCurveTo(-fW, 0, -fW, -fH/2, 0, -fH);
+            const fw = isHovered ? 12 : 8;
+            const fh = (isHovered ? 28 : 18) + flicker;
             
-            const flameGrad = dCtx.createLinearGradient(0, -fH, 0, 2);
-            flameGrad.addColorStop(0, '#fff');
-            flameGrad.addColorStop(0.3, isHovered ? '#fff' : '#ffcf40');
-            flameGrad.addColorStop(1, '#ff5f00');
-            dCtx.fillStyle = flameGrad;
-            dCtx.fill();
+            dCtx.beginPath();
+            dCtx.moveTo(0, -fh);
+            dCtx.bezierCurveTo(fw, -fh/2, fw, 0, 0, 2);
+            dCtx.bezierCurveTo(-fw, 0, -fw, -fh/2, 0, -fh);
+            
+            const fg = dCtx.createLinearGradient(0, -fh, 0, 2);
+            if (isSpecial) {
+                fg.addColorStop(0, '#fff'); fg.addColorStop(0.5, '#f9e29f'); fg.addColorStop(1, '#d4af37');
+                // Special Soul particles
+                if (Math.random() > 0.6) {
+                    soulParticles.push({ x: cx, y: cy - 20, v: Math.random() * 2 + 1, o: 1, s: Math.random()*2+1 });
+                }
+            } else {
+                fg.addColorStop(0, '#fff'); fg.addColorStop(0.3, isHovered ? '#fff' : '#ffcf40'); fg.addColorStop(1, '#ff5f00');
+            }
+            dCtx.fillStyle = fg; dCtx.fill();
 
             dCtx.restore();
         }
 
-        function animateDiya(time) {
-            dCtx.save();
-            dCtx.setTransform(1,0,0,1,0,0);
-            dCtx.clearRect(0,0,diyaCanvas.width, diyaCanvas.height);
-            dCtx.restore();
+        function animateDiyaSystem(time) {
+            dCtx.save(); dCtx.setTransform(1,0,0,1,0,0);
+            dCtx.clearRect(0,0,diyaCanvas.width, diyaCanvas.height); dCtx.restore();
 
             let i = 0;
-            for(let r=0; r<ROWS; r++) {
-                for(let c=0; c<COLS; c++) {
-                    drawDiya(c * CELL_W, r * CELL_H, time, i);
-                    i++;
-                }
-            }
-            requestAnimationFrame(animateDiya);
-        }
+            for(let r=0; r<ROWS; r++) { for(let c=0; c<COLS; c++) { drawDiya(c * CELL_W, r * CELL_H, time, i); i++; } }
 
-        /** * Intersection Observer for Poem reveal */
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if(entry.isIntersecting) entry.target.classList.add('visible');
+            // Draw Soul Particles for 50th Diya
+            soulParticles.forEach((p, index) => {
+                p.y -= p.v; p.x += Math.sin(p.y*0.05); p.o -= 0.01;
+                if(p.o <= 0) { soulParticles.splice(index, 1); return; }
+                dCtx.save(); dCtx.setTransform(1,0,0,1,0,0);
+                dCtx.fillStyle = `rgba(255, 255, 255, ${p.o})`;
+                dCtx.beginPath(); dCtx.arc(p.x * scaleFactor, p.y * scaleFactor, p.s * scaleFactor, 0, Math.PI*2); dCtx.fill();
+                dCtx.restore();
             });
-        }, { threshold: 0.5 });
+            requestAnimationFrame(animateDiyaSystem);
+        }
 
-        document.querySelectorAll('.poem-line').forEach(line => observer.observe(line));
+        // Setup Observers & Initialization
+        const obs = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), {threshold: 0.5});
+        document.querySelectorAll('.poem-line').forEach(l => obs.observe(l));
 
-        /** * Celebration Burst */
-        function launchCelebration() {
-            const colors = ['#d4af37', '#f9e29f', '#ffffff', '#aa8439'];
-            for(let i=0; i<150; i++) {
-                const conf = document.createElement('div');
-                conf.className = 'confetti';
-                conf.style.left = Math.random() * 100 + 'vw';
-                conf.style.top = '-10px';
-                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                conf.style.transform = `rotate(${Math.random() * 360}deg)`;
-                document.body.appendChild(conf);
-
-                const destX = (Math.random() - 0.5) * 500;
-                const duration = 2000 + Math.random() * 3000;
-
-                const animation = conf.animate([
-                    { transform: `translate3d(0,0,0) rotate(0deg)`, opacity: 1 },
-                    { transform: `translate3d(${destX}px, 105vh, 0) rotate(${Math.random() * 1000}deg)`, opacity: 0 }
-                ], {
-                    duration: duration,
-                    easing: 'cubic-bezier(0.1, 0, 0.3, 1)'
-                });
-
-                animation.onfinish = () => conf.remove();
+        function launchCelebration(e) {
+            // Trigger cinematic canvas fireworks from bottom center
+            const startX = window.innerWidth / 2;
+            const startY = window.innerHeight;
+            
+            for(let j=0; j<5; j++) {
+                setTimeout(() => {
+                    createExplosion(startX + (Math.random()-0.5)*400, startY - 200 - Math.random()*300);
+                }, j * 300);
             }
         }
 
-        // Init
-        window.onload = () => {
-            initHero();
-            animateHero();
-            initDiya();
-            requestAnimationFrame(animateDiya);
-        };
-
-        window.onresize = () => {
-            initHero();
-            initDiya();
-        };
-
+        window.onload = () => { initHero(); animateHero(); initDiya(); requestAnimationFrame(animateDiyaSystem); };
+        window.onresize = () => { initHero(); initDiya(); resizeMagic(); };
+        
         window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
+            const scrolled = window.scrollY;
             const heroContent = document.querySelector('.hero-content');
-            heroContent.style.transform = `translateY(${scrolled * 0.4}px)`;
-            heroContent.style.opacity = 1 - (scrolled / 600);
+            if (heroContent) {
+                heroContent.style.transform = `translateY(${scrolled * 0.4}px)`;
+                heroContent.style.opacity = 1 - (scrolled / 600);
+            }
         });
     </script>
 </body>
