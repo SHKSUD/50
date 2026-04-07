@@ -46,7 +46,6 @@
             background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
-        /* Magic Interaction Canvas overlay */
         #magic-canvas {
             position: fixed;
             top: 0;
@@ -87,10 +86,6 @@
             opacity: 0;
         }
         
-        .music-control:hover::before {
-            opacity: 1;
-        }
-
         @keyframes pulse {
             0% { transform: scale(1); opacity: 0.8; }
             100% { transform: scale(1.5); opacity: 0; }
@@ -142,20 +137,24 @@
 
         .names-display {
             font-family: var(--font-accent);
-            font-size: clamp(2rem, 5vw, 4rem);
+            font-size: clamp(2rem, 5vw, 3.5rem);
             letter-spacing: 0.3rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             background: linear-gradient(to bottom, #fff, var(--gold-mid));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3));
-            animation: textGlow 4s infinite alternate;
         }
 
-        @keyframes textGlow {
-            0% { filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3)); }
-            50% { filter: drop-shadow(0 4px 30px rgba(255, 220, 100, 0.8)); }
-            100% { filter: drop-shadow(0 4px 10px rgba(212, 175, 55, 0.3)); }
+        .parentage {
+            font-family: var(--font-main);
+            font-style: italic;
+            font-weight: 300;
+            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+            color: var(--gold-light);
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
         }
 
         .big-number {
@@ -168,17 +167,14 @@
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
             position: relative;
             cursor: pointer;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             user-select: none;
             display: inline-block;
         }
         
         .big-number:hover {
             transform: scale(1.05);
-        }
-        
-        .big-number:active {
-            transform: scale(0.95);
+            filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.5));
         }
 
         .sanskrit-wish {
@@ -295,8 +291,6 @@
 <body>
 
     <div class="overlay"></div>
-    
-    <!-- Magic Overlay Canvas -->
     <canvas id="magic-canvas"></canvas>
 
     <audio id="bg-music" loop>
@@ -316,6 +310,7 @@
         <div class="hero-content">
             <span class="eyebrow">A Special Celebration For</span>
             <h2 class="names-display">Dr LALATENDU MAHAPATRA</h2>
+            <div class="parentage">Son of Rajani Kanta Mahapatra and Manorama Mahapatra</div>
             <h1 class="big-number" id="age-number" onclick="transformAge(event)">50</h1>
             <div class="sanskrit-wish">शतमञ्जय शरदो वर्धमानः</div>
             <p class="tagline">Pashyema Sharadah Shatam — May you live a hundred years</p>
@@ -344,7 +339,7 @@
     </section>
 
     <script>
-        // -- MUSIC LOGIC --
+        // -- MUSIC & PARTICLE LOGIC --
         const musicBtn = document.getElementById('music-btn');
         const audio = document.getElementById('bg-music');
         let isPlaying = false;
@@ -355,14 +350,12 @@
             isPlaying = !isPlaying;
         });
 
-        // -- MAGIC DUST & FIREWORKS ENGINE --
         const magicCanvas = document.getElementById('magic-canvas');
         const mCtx = magicCanvas.getContext('2d');
         let magicParticles = [];
         let fireworks = [];
         let magicRipples = [];
         let shootingStars = [];
-        let globalMouseX = -1000, globalMouseY = -1000;
 
         function resizeMagic() {
             magicCanvas.width = window.innerWidth;
@@ -372,10 +365,6 @@
         resizeMagic();
 
         window.addEventListener('mousemove', (e) => {
-            globalMouseX = e.clientX;
-            globalMouseY = e.clientY;
-            
-            // Add dust trail
             if (Math.random() > 0.5) {
                 magicParticles.push({
                     x: e.clientX, y: e.clientY,
@@ -385,22 +374,11 @@
             }
         });
 
-        // Add interactive ripples and mini-bursts on click everywhere
-        window.addEventListener('mousedown', (e) => {
-            if (e.target.tagName.toLowerCase() !== 'button' && 
-                e.target.id !== 'music-btn' && 
-                e.target.id !== 'age-number' &&
-                e.target.closest('#music-btn') === null) {
-                magicRipples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 1 });
-                createExplosion(e.clientX, e.clientY, 12); // Mini magical burst
-            }
-        });
-
         function createExplosion(x, y, count = 150) {
             const colors = ['#d4af37', '#f9e29f', '#ffffff', '#ffcf40'];
             for(let i=0; i<count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * (count === 150 ? 15 : 6) + (count === 150 ? 5 : 2);
+                const speed = Math.random() * (count > 50 ? 15 : 6) + 2;
                 fireworks.push({
                     x: x, y: y,
                     vx: Math.cos(angle) * speed,
@@ -412,10 +390,32 @@
             }
         }
 
+        function transformAge(e) {
+            const ageEl = e.target;
+            if (ageEl.textContent === '100') return;
+            
+            const rect = ageEl.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            createExplosion(centerX, centerY, 150);
+            magicRipples.push({ x: centerX, y: centerY, r: 0, alpha: 1.5 });
+            
+            ageEl.style.transform = 'scale(0.5) rotate(10deg)';
+            ageEl.style.opacity = '0';
+            
+            setTimeout(() => {
+                ageEl.textContent = '100';
+                ageEl.style.transform = 'scale(1) rotate(0deg)';
+                ageEl.style.opacity = '1';
+                ageEl.style.filter = 'drop-shadow(0 0 40px var(--gold-mid))';
+            }, 300);
+        }
+
         function animateMagicSystem() {
             mCtx.clearRect(0, 0, magicCanvas.width, magicCanvas.height);
             
-            // Shooting Stars Generator
+            // Shooting Stars
             if (Math.random() < 0.015) {
                 shootingStars.push({
                     x: Math.random() * window.innerWidth * 1.5, y: -50,
@@ -424,34 +424,28 @@
                 });
             }
 
-            // Draw Shooting Stars
             for (let i = shootingStars.length - 1; i >= 0; i--) {
                 const s = shootingStars[i];
                 s.x += s.vx; s.y += s.vy; s.life -= 0.01;
-                if (s.life <= 0 || s.y > magicCanvas.height || s.x < 0) { shootingStars.splice(i, 1); continue; }
-                
+                if (s.life <= 0) { shootingStars.splice(i, 1); continue; }
                 mCtx.beginPath();
                 const grad = mCtx.createLinearGradient(s.x, s.y, s.x - s.vx * 4, s.y - s.vy * 4);
                 grad.addColorStop(0, `rgba(255, 255, 255, ${s.life})`);
                 grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
                 mCtx.strokeStyle = grad; mCtx.lineWidth = s.size;
                 mCtx.moveTo(s.x, s.y); mCtx.lineTo(s.x - s.vx * 4, s.y - s.vy * 4); mCtx.stroke();
-                mCtx.fillStyle = `rgba(255, 255, 255, ${s.life})`;
-                mCtx.beginPath(); mCtx.arc(s.x, s.y, s.size * 1.5, 0, Math.PI*2); mCtx.fill();
             }
 
-            // Draw Magic Ripples
+            // Ripples
             for (let i = magicRipples.length - 1; i >= 0; i--) {
                 const r = magicRipples[i];
-                r.r += 6; r.alpha -= 0.02;
+                r.r += 8; r.alpha -= 0.02;
                 if (r.alpha <= 0) { magicRipples.splice(i, 1); continue; }
                 mCtx.strokeStyle = `rgba(212, 175, 55, ${r.alpha})`; mCtx.lineWidth = 2;
                 mCtx.beginPath(); mCtx.arc(r.x, r.y, r.r, 0, Math.PI*2); mCtx.stroke();
-                mCtx.strokeStyle = `rgba(249, 226, 159, ${r.alpha * 0.4})`;
-                mCtx.beginPath(); mCtx.arc(r.x, r.y, r.r + 15, 0, Math.PI*2); mCtx.stroke();
             }
 
-            // Draw Dust
+            // Dust
             for (let i = magicParticles.length - 1; i >= 0; i--) {
                 const p = magicParticles[i];
                 p.x += p.vx; p.y += p.vy; p.life -= 0.02;
@@ -460,12 +454,10 @@
                 mCtx.beginPath(); mCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); mCtx.fill();
             }
 
-            // Draw Fireworks
+            // Fireworks
             for (let i = fireworks.length - 1; i >= 0; i--) {
                 const f = fireworks[i];
-                f.vy += 0.2; // gravity
-                f.x += f.vx; f.y += f.vy; f.life -= f.decay;
-                
+                f.vy += 0.2; f.x += f.vx; f.y += f.vy; f.life -= f.decay;
                 if (f.life <= 0) { fireworks.splice(i, 1); continue; }
                 mCtx.fillStyle = f.color;
                 mCtx.globalAlpha = f.life;
@@ -500,13 +492,12 @@
             requestAnimationFrame(animateHero);
         }
 
-        // -- DIYA ENGINE (Interactive Wind + 50th Special) --
+        // -- DIYA ENGINE --
         const diyaCanvas = document.getElementById('diya-canvas');
         const dCtx = diyaCanvas.getContext('2d');
         const COLS = 10, ROWS = 5;
         const CELL_W = 100, CELL_H = 120;
         let dMouseX = -1000, dMouseY = -1000, scaleFactor = 1;
-        let soulParticles = [];
 
         function initDiya() {
             const width = COLS * CELL_W; const height = ROWS * CELL_H;
@@ -520,140 +511,55 @@
             dMouseX = (e.clientX - r.left) / scaleFactor;
             dMouseY = (e.clientY - r.top) / scaleFactor;
         });
-        diyaCanvas.addEventListener('mouseleave', () => { dMouseX = -1000; dMouseY = -1000; });
 
         function drawDiya(x, y, time, i) {
             const cx = x + CELL_W/2, cy = y + CELL_H/2 + 20;
             const dist = Math.sqrt((dMouseX - cx)**2 + (dMouseY - cy)**2);
-            const isHovered = dist < 70;
-            const isSpecial = i === 49; // The 50th Diya
+            const flicker = Math.sin(time * 0.01 + i) * 4;
             
-            const flicker = Math.sin(time * 0.01 + i) * (isHovered ? 8 : 4);
-            let glowR = (isHovered ? 40 : 20) + flicker;
-            if (isSpecial) glowR = (isHovered ? 65 : 35) + flicker;
-
-            // Wind bending logic
-            let bendAngle = 0;
-            if (dist < 120) {
-                // Bend away from cursor
-                bendAngle = ((cx - dMouseX) / 120) * 0.5; 
-            }
-
             dCtx.save();
             dCtx.translate(cx, cy);
-
-            // Shadow
             dCtx.beginPath();
             dCtx.ellipse(0, 5, 20, 5, 0, 0, Math.PI*2);
             dCtx.fillStyle = 'rgba(0,0,0,0.4)';
             dCtx.fill();
-
-            // Bowl
             dCtx.beginPath(); dCtx.moveTo(-22, -2);
             dCtx.bezierCurveTo(-22, 15, 22, 15, 22, -2); dCtx.closePath();
-            dCtx.fillStyle = isSpecial ? '#8b3d16' : '#5d2306'; dCtx.fill();
-            dCtx.strokeStyle = isSpecial ? '#fff' : (isHovered ? '#fffb00' : '#d4af37');
-            dCtx.lineWidth = isSpecial || isHovered ? 2 : 1; dCtx.stroke();
-
-            // Glow
-            const g = dCtx.createRadialGradient(0, -15, 0, 0, -15, glowR);
-            g.addColorStop(0, isSpecial ? 'rgba(255,255,200,0.8)' : (isHovered ? 'rgba(255,220,100,0.7)' : 'rgba(255,150,50,0.5)'));
-            g.addColorStop(1, 'rgba(0,0,0,0)');
-            dCtx.fillStyle = g;
-            dCtx.beginPath(); dCtx.arc(0, -15, glowR, 0, Math.PI*2); dCtx.fill();
-
-            // Flame (With Wind Bend)
+            dCtx.fillStyle = '#5d2306'; dCtx.fill();
             dCtx.translate(0, -15);
-            dCtx.rotate(bendAngle); // Apply Wind
-
-            const fw = isHovered ? 12 : 8;
-            const fh = (isHovered ? 28 : 18) + flicker;
-            
-            dCtx.beginPath();
-            dCtx.moveTo(0, -fh);
+            const fw = 8; const fh = 18 + flicker;
+            dCtx.beginPath(); dCtx.moveTo(0, -fh);
             dCtx.bezierCurveTo(fw, -fh/2, fw, 0, 0, 2);
             dCtx.bezierCurveTo(-fw, 0, -fw, -fh/2, 0, -fh);
-            
             const fg = dCtx.createLinearGradient(0, -fh, 0, 2);
-            if (isSpecial) {
-                fg.addColorStop(0, '#fff'); fg.addColorStop(0.5, '#f9e29f'); fg.addColorStop(1, '#d4af37');
-                // Special Soul particles
-                if (Math.random() > 0.6) {
-                    soulParticles.push({ x: cx, y: cy - 20, v: Math.random() * 2 + 1, o: 1, s: Math.random()*2+1, angle: Math.random() * Math.PI * 2 });
-                }
-            } else {
-                fg.addColorStop(0, '#fff'); fg.addColorStop(0.3, isHovered ? '#fff' : '#ffcf40'); fg.addColorStop(1, '#ff5f00');
-            }
+            fg.addColorStop(0, '#fff'); fg.addColorStop(1, '#ff5f00');
             dCtx.fillStyle = fg; dCtx.fill();
-
             dCtx.restore();
         }
 
         function animateDiyaSystem(time) {
             dCtx.save(); dCtx.setTransform(1,0,0,1,0,0);
             dCtx.clearRect(0,0,diyaCanvas.width, diyaCanvas.height); dCtx.restore();
-
             let i = 0;
             for(let r=0; r<ROWS; r++) { for(let c=0; c<COLS; c++) { drawDiya(c * CELL_W, r * CELL_H, time, i); i++; } }
-
-            // Draw Soul Particles for 50th Diya
-            soulParticles.forEach((p, index) => {
-                p.angle += 0.1; p.y -= p.v; p.x += Math.cos(p.angle) * 1.5; p.o -= 0.01;
-                if(p.o <= 0) { soulParticles.splice(index, 1); return; }
-                dCtx.save(); dCtx.setTransform(1,0,0,1,0,0);
-                dCtx.fillStyle = `rgba(255, 255, 255, ${p.o})`;
-                dCtx.beginPath(); dCtx.arc(p.x * scaleFactor, p.y * scaleFactor, p.s * scaleFactor, 0, Math.PI*2); dCtx.fill();
-                dCtx.restore();
-            });
             requestAnimationFrame(animateDiyaSystem);
         }
 
-        // -- TRANSFORMATION LOGIC --
-        function transformAge(e) {
-            const ageEl = e.target;
-            const rect = ageEl.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            // Magical Burst Effect
-            createExplosion(centerX, centerY, 80);
-            magicRipples.push({ x: centerX, y: centerY, r: 0, alpha: 1.5 });
-            
-            // Change the number with a smooth fade
-            ageEl.style.opacity = '0';
-            setTimeout(() => {
-                ageEl.textContent = '100';
-                ageEl.style.opacity = '1';
-                ageEl.style.filter = 'drop-shadow(0 0 30px var(--gold-mid))';
-                
-                // Extra Celebration
-                for(let i=0; i<3; i++) {
-                    setTimeout(() => {
-                        createExplosion(centerX + (Math.random()-0.5)*100, centerY + (Math.random()-0.5)*100, 20);
-                    }, i * 200);
-                }
-            }, 150);
-        }
-
-        // Setup Observers & Initialization
-        const obs = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), {threshold: 0.5});
-        document.querySelectorAll('.poem-line').forEach(l => obs.observe(l));
-
         function launchCelebration(e) {
-            // Trigger cinematic canvas fireworks from bottom center
             const startX = window.innerWidth / 2;
             const startY = window.innerHeight;
-            
-            for(let j=0; j<5; j++) {
+            for(let j=0; j<8; j++) {
                 setTimeout(() => {
-                    createExplosion(startX + (Math.random()-0.5)*400, startY - 200 - Math.random()*300);
-                }, j * 300);
+                    createExplosion(startX + (Math.random()-0.5)*600, startY - 200 - Math.random()*400, 60);
+                }, j * 200);
             }
         }
 
+        const obs = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), {threshold: 0.5});
+        document.querySelectorAll('.poem-line').forEach(l => obs.observe(l));
+
         window.onload = () => { initHero(); animateHero(); initDiya(); requestAnimationFrame(animateDiyaSystem); };
         window.onresize = () => { initHero(); initDiya(); resizeMagic(); };
-        
         window.addEventListener('scroll', () => {
             const scrolled = window.scrollY;
             const heroContent = document.querySelector('.hero-content');
