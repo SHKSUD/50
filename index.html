@@ -167,6 +167,18 @@
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
             position: relative;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            display: inline-block;
+        }
+        
+        .big-number:hover {
+            transform: scale(1.05);
+        }
+        
+        .big-number:active {
+            transform: scale(0.95);
         }
 
         .sanskrit-wish {
@@ -304,7 +316,7 @@
         <div class="hero-content">
             <span class="eyebrow">A Special Celebration For</span>
             <h2 class="names-display">Dr LALATENDU MAHAPATRA</h2>
-            <h1 class="big-number">50</h1>
+            <h1 class="big-number" id="age-number" onclick="transformAge(event)">50</h1>
             <div class="sanskrit-wish">शतमञ्जय शरदो वर्धमानः</div>
             <p class="tagline">Pashyema Sharadah Shatam — May you live a hundred years</p>
         </div>
@@ -375,7 +387,10 @@
 
         // Add interactive ripples and mini-bursts on click everywhere
         window.addEventListener('mousedown', (e) => {
-            if (e.target.tagName.toLowerCase() !== 'button' && e.target.id !== 'music-btn' && e.target.closest('#music-btn') === null) {
+            if (e.target.tagName.toLowerCase() !== 'button' && 
+                e.target.id !== 'music-btn' && 
+                e.target.id !== 'age-number' &&
+                e.target.closest('#music-btn') === null) {
                 magicRipples.push({ x: e.clientX, y: e.clientY, r: 0, alpha: 1 });
                 createExplosion(e.clientX, e.clientY, 12); // Mini magical burst
             }
@@ -591,6 +606,33 @@
                 dCtx.restore();
             });
             requestAnimationFrame(animateDiyaSystem);
+        }
+
+        // -- TRANSFORMATION LOGIC --
+        function transformAge(e) {
+            const ageEl = e.target;
+            const rect = ageEl.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Magical Burst Effect
+            createExplosion(centerX, centerY, 80);
+            magicRipples.push({ x: centerX, y: centerY, r: 0, alpha: 1.5 });
+            
+            // Change the number with a smooth fade
+            ageEl.style.opacity = '0';
+            setTimeout(() => {
+                ageEl.textContent = '100';
+                ageEl.style.opacity = '1';
+                ageEl.style.filter = 'drop-shadow(0 0 30px var(--gold-mid))';
+                
+                // Extra Celebration
+                for(let i=0; i<3; i++) {
+                    setTimeout(() => {
+                        createExplosion(centerX + (Math.random()-0.5)*100, centerY + (Math.random()-0.5)*100, 20);
+                    }, i * 200);
+                }
+            }, 150);
         }
 
         // Setup Observers & Initialization
