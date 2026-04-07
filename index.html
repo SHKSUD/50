@@ -28,6 +28,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        /* Ambient Grain & Overlay */
         .overlay {
             position: fixed;
             inset: 0;
@@ -73,22 +74,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             backdrop-filter: blur(5px);
-        }
-
-        .music-control::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 1px solid var(--gold-mid);
-            animation: pulse 2s infinite;
-            opacity: 0;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
         }
 
         .hero {
@@ -171,11 +156,6 @@
             user-select: none;
             display: inline-block;
         }
-        
-        .big-number:hover {
-            transform: scale(1.05);
-            filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.5));
-        }
 
         .sanskrit-wish {
             font-family: var(--font-sanskrit);
@@ -184,15 +164,6 @@
             margin-top: 2rem;
             letter-spacing: 1px;
             opacity: 0.9;
-        }
-
-        .tagline {
-            font-style: italic;
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            font-weight: 300;
-            margin-top: 1rem;
-            color: #ececec;
-            opacity: 0.7;
         }
 
         .poem-section {
@@ -293,29 +264,32 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             z-index: 300;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 1s ease;
-            backdrop-filter: blur(10px);
+            transition: opacity 1.2s ease;
+            backdrop-filter: blur(12px);
         }
         
-        #legacy-overlay.active {
-            opacity: 1;
-        }
+        #legacy-overlay.active { opacity: 1; }
 
         .legacy-text {
             text-align: center;
             font-family: var(--font-accent);
             max-width: 80%;
+            transform: scale(0.9);
+            transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
         }
+
+        #legacy-overlay.active .legacy-text { transform: scale(1); }
 
         .legacy-names {
             font-size: clamp(1.5rem, 4vw, 3rem);
             color: var(--gold-mid);
             margin-bottom: 1rem;
             display: block;
+            letter-spacing: 5px;
         }
 
         .legacy-sub {
@@ -384,24 +358,19 @@
     </section>
 
     <script>
-        // -- MUSIC & PARTICLE LOGIC --
-        const musicBtn = document.getElementById('music-btn');
-        const audio = document.getElementById('bg-music');
-        let isPlaying = false;
-
-        musicBtn.addEventListener('click', () => {
-            if (isPlaying) { audio.pause(); musicBtn.style.background = "rgba(212, 175, 55, 0.15)"; } 
-            else { audio.play(); musicBtn.style.background = "var(--gold-mid)"; musicBtn.style.color = "#000"; }
-            isPlaying = !isPlaying;
-        });
-
+        // -- CORE CANVAS & STATE --
         const magicCanvas = document.getElementById('magic-canvas');
         const mCtx = magicCanvas.getContext('2d');
+        const audio = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-btn');
+        
+        let isPlaying = false;
         let magicParticles = [];
         let fireworks = [];
         let magicRipples = [];
-        let shootingStars = [];
-        let progenitorStars = []; // For the special parents effect
+        let flowers = [];
+        let progenitorStars = [];
+        let lastScrollY = window.scrollY;
 
         function resizeMagic() {
             magicCanvas.width = window.innerWidth;
@@ -410,314 +379,201 @@
         window.addEventListener('resize', resizeMagic);
         resizeMagic();
 
-        window.addEventListener('mousemove', (e) => {
-            if (Math.random() > 0.5) {
-                magicParticles.push({
-                    x: e.clientX, y: e.clientY,
-                    vx: (Math.random() - 0.5) * 2, vy: Math.random() * 2 + 1,
-                    life: 1, size: Math.random() * 3 + 1
-                });
-            }
+        // -- AUDIO TOGGLE --
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) { audio.pause(); musicBtn.style.background = "rgba(212, 175, 55, 0.15)"; } 
+            else { audio.play(); musicBtn.style.background = "var(--gold-mid)"; musicBtn.style.color = "#000"; }
+            isPlaying = !isPlaying;
         });
 
-        function createExplosion(x, y, count = 150, colorSet = null) {
-            const defaultColors = ['#d4af37', '#f9e29f', '#ffffff', '#ffcf40'];
-            const colors = colorSet || defaultColors;
+        // -- PARTICLE GENERATORS --
+        function createExplosion(x, y, count = 100, colors = ['#d4af37', '#f9e29f', '#ffffff']) {
             for(let i=0; i<count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * (count > 50 ? 15 : 6) + 2;
+                const speed = Math.random() * 12 + 2;
                 fireworks.push({
-                    x: x, y: y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    life: 1, decay: Math.random() * 0.015 + 0.005,
-                    size: Math.random() * 4 + 1,
-                    color: colors[Math.floor(Math.random() * colors.length)]
+                    x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                    life: 1, decay: Math.random() * 0.01 + 0.005,
+                    size: Math.random() * 3 + 1, color: colors[Math.floor(Math.random() * colors.length)]
                 });
             }
         }
 
-        function transformAge(e) {
-            const ageEl = e.target;
-            if (ageEl.textContent === '100') return;
-            
-            const rect = ageEl.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            createExplosion(centerX, centerY, 150);
-            magicRipples.push({ x: centerX, y: centerY, r: 0, alpha: 1.5 });
-            
-            ageEl.style.transform = 'scale(0.5) rotate(10deg)';
-            ageEl.style.opacity = '0';
-            
-            setTimeout(() => {
-                ageEl.textContent = '100';
-                ageEl.style.transform = 'scale(1) rotate(0deg)';
-                ageEl.style.opacity = '1';
-                ageEl.style.filter = 'drop-shadow(0 0 40px var(--gold-mid))';
-            }, 300);
+        function spawnFlowers() {
+            const colors = ['#f9e29f', '#ffffff', '#ffd700'];
+            for(let i=0; i<60; i++) {
+                flowers.push({
+                    x: Math.random() * magicCanvas.width, y: -50 - Math.random() * 800,
+                    size: Math.random() * 6 + 3, speed: Math.random() * 2 + 1.5,
+                    rot: Math.random() * Math.PI * 2, rotSpeed: (Math.random()-0.5)*0.04,
+                    color: colors[Math.floor(Math.random() * colors.length)], sway: Math.random() * 5
+                });
+            }
         }
 
-        function animateMagicSystem() {
+        // -- ANIMATION LOOP --
+        function animateMagicSystem(t) {
             mCtx.clearRect(0, 0, magicCanvas.width, magicCanvas.height);
             
-            // Shooting Stars
-            if (Math.random() < 0.015) {
-                shootingStars.push({
-                    x: Math.random() * window.innerWidth * 1.5, y: -50,
-                    vx: -15 - Math.random() * 10, vy: 15 + Math.random() * 10,
-                    life: 1, size: Math.random() * 2 + 1
-                });
-            }
-
-            for (let i = shootingStars.length - 1; i >= 0; i--) {
-                const s = shootingStars[i];
-                s.x += s.vx; s.y += s.vy; s.life -= 0.01;
-                if (s.life <= 0) { shootingStars.splice(i, 1); continue; }
-                mCtx.beginPath();
-                const grad = mCtx.createLinearGradient(s.x, s.y, s.x - s.vx * 4, s.y - s.vy * 4);
-                grad.addColorStop(0, `rgba(255, 255, 255, ${s.life})`);
-                grad.addColorStop(1, 'rgba(212, 175, 55, 0)');
-                mCtx.strokeStyle = grad; mCtx.lineWidth = s.size;
-                mCtx.moveTo(s.x, s.y); mCtx.lineTo(s.x - s.vx * 4, s.y - s.vy * 4); mCtx.stroke();
-            }
-
-            // Progenitor Stars (Parents)
-            for (let i = progenitorStars.length - 1; i >= 0; i--) {
-                const p = progenitorStars[i];
-                p.x += (p.targetX - p.x) * 0.05;
-                p.y += (p.targetY - p.y) * 0.05;
-                
-                mCtx.shadowBlur = 20;
-                mCtx.shadowColor = p.color;
-                mCtx.fillStyle = p.color;
-                mCtx.beginPath();
-                mCtx.arc(p.x, p.y, 8, 0, Math.PI*2);
-                mCtx.fill();
-                mCtx.shadowBlur = 0;
-                
-                // Trail
-                magicParticles.push({
-                    x: p.x, y: p.y, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2,
-                    life: 0.5, size: 2
-                });
-
-                if (Math.abs(p.x - p.targetX) < 5 && Math.abs(p.y - p.targetY) < 5) {
-                    if (i === 0) {
-                        createExplosion(p.x, p.y, 300, ['#ffffff', '#f9e29f', '#d4af37']);
-                        progenitorStars = [];
-                    }
-                }
-            }
-
-            // Ripples
+            // 1. Ripples (Scroll & Interaction)
             for (let i = magicRipples.length - 1; i >= 0; i--) {
                 const r = magicRipples[i];
-                r.r += 8; r.alpha -= 0.02;
+                r.r += (r.speed || 10); r.alpha -= (r.fade || 0.012);
                 if (r.alpha <= 0) { magicRipples.splice(i, 1); continue; }
                 mCtx.strokeStyle = `rgba(212, 175, 55, ${r.alpha})`; mCtx.lineWidth = 2;
                 mCtx.beginPath(); mCtx.arc(r.x, r.y, r.r, 0, Math.PI*2); mCtx.stroke();
             }
 
-            // Dust
-            for (let i = magicParticles.length - 1; i >= 0; i--) {
-                const p = magicParticles[i];
-                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-                if (p.life <= 0) { magicParticles.splice(i, 1); continue; }
-                mCtx.fillStyle = `rgba(212, 175, 55, ${p.life})`;
-                mCtx.beginPath(); mCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); mCtx.fill();
+            // 2. Flowers (Pushpa Vrishti)
+            for (let i = flowers.length - 1; i >= 0; i--) {
+                const f = flowers[i];
+                f.y += f.speed; f.rot += f.rotSpeed;
+                f.x += Math.sin(f.y * 0.01 + f.sway) * 0.5;
+                if (f.y > magicCanvas.height + 20) { flowers.splice(i, 1); continue; }
+                mCtx.save(); mCtx.translate(f.x, f.y); mCtx.rotate(f.rot); mCtx.globalAlpha = 0.7;
+                mCtx.fillStyle = f.color;
+                for(let p=0; p<4; p++) {
+                    mCtx.rotate(Math.PI/2); mCtx.beginPath();
+                    mCtx.ellipse(0, f.size, f.size/2, f.size, 0, 0, Math.PI*2); mCtx.fill();
+                }
+                mCtx.restore();
             }
 
-            // Fireworks
+            // 3. Progenitor Stars (Legacy)
+            for (let i = progenitorStars.length - 1; i >= 0; i--) {
+                const p = progenitorStars[i];
+                p.x += (p.targetX - p.x) * 0.05; p.y += (p.targetY - p.y) * 0.05;
+                mCtx.shadowBlur = 25; mCtx.shadowColor = p.color; mCtx.fillStyle = p.color;
+                mCtx.beginPath(); mCtx.arc(p.x, p.y, 10, 0, Math.PI*2); mCtx.fill();
+                mCtx.shadowBlur = 0;
+                if (Math.abs(p.x - p.targetX) < 10) {
+                    if (i === 0) {
+                        createExplosion(p.x, p.y, 300);
+                        magicRipples.push({ x: p.x, y: p.y, r: 0, alpha: 1, speed: 15, fade: 0.01 });
+                        progenitorStars = [];
+                    }
+                }
+            }
+
+            // 4. Fireworks
             for (let i = fireworks.length - 1; i >= 0; i--) {
                 const f = fireworks[i];
-                f.vy += 0.2; f.x += f.vx; f.y += f.vy; f.life -= f.decay;
+                f.vy += 0.15; f.x += f.vx; f.y += f.vy; f.life -= f.decay;
                 if (f.life <= 0) { fireworks.splice(i, 1); continue; }
-                mCtx.fillStyle = f.color;
-                mCtx.globalAlpha = f.life;
+                mCtx.globalAlpha = f.life; mCtx.fillStyle = f.color;
                 mCtx.beginPath(); mCtx.arc(f.x, f.y, f.size, 0, Math.PI*2); mCtx.fill();
             }
             mCtx.globalAlpha = 1;
             requestAnimationFrame(animateMagicSystem);
         }
-        animateMagicSystem();
 
-        // -- HERO BACKGROUND ENGINE --
-        const heroCanvas = document.getElementById('hero-canvas');
-        const hCtx = heroCanvas.getContext('2d');
-        let heroParticles = [];
+        // -- SCROLL RIPPLE LOGIC --
+        window.addEventListener('scroll', () => {
+            const currentY = window.scrollY;
+            const diff = Math.abs(currentY - lastScrollY);
+            
+            // Trigger ripple every 400px of scrolling
+            if (diff > 400) {
+                magicRipples.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    r: 0, alpha: 0.5, speed: 8, fade: 0.015
+                });
+                lastScrollY = currentY;
+            }
 
-        function initHero() {
-            heroCanvas.width = window.innerWidth;
-            heroCanvas.height = window.innerHeight;
-            heroParticles = Array.from({length: 120}, () => ({
-                x: Math.random() * heroCanvas.width, y: Math.random() * heroCanvas.height,
-                s: Math.random() * 2 + 0.5, v: Math.random() * 0.5 + 0.1
-            }));
+            // Parallax Hero
+            const heroContent = document.querySelector('.hero-content');
+            if (heroContent) {
+                heroContent.style.transform = `translateY(${currentY * 0.4}px)`;
+                heroContent.style.opacity = 1 - (currentY / 700);
+            }
+        });
+
+        // -- BUTTON ACTIONS --
+        function transformAge(e) {
+            const el = e.target;
+            if (el.textContent === '100') return;
+            const r = el.getBoundingClientRect();
+            createExplosion(r.left + r.width/2, r.top + r.height/2, 150);
+            magicRipples.push({ x: r.left+r.width/2, y: r.top+r.height/2, r: 0, alpha: 1, speed: 20 });
+            el.style.opacity = '0';
+            setTimeout(() => { el.textContent = '100'; el.style.opacity = '1'; el.style.filter = 'drop-shadow(0 0 40px var(--gold-mid))'; }, 300);
         }
 
+        function launchCelebration() {
+            const overlay = document.getElementById('legacy-overlay');
+            overlay.classList.add('active');
+            const midX = window.innerWidth / 2, midY = window.innerHeight / 2;
+            
+            progenitorStars = [
+                { x: 0, y: window.innerHeight, targetX: midX - 20, targetY: midY, color: '#f9e29f' },
+                { x: window.innerWidth, y: window.innerHeight, targetX: midX + 20, targetY: midY, color: '#d4af37' }
+            ];
+
+            spawnFlowers();
+            setTimeout(() => {
+                for(let i=0; i<12; i++) {
+                    setTimeout(() => createExplosion(Math.random()*window.innerWidth, window.innerHeight*0.3 + Math.random()*400, 80), i*350);
+                }
+            }, 1000);
+            setTimeout(() => overlay.classList.remove('active'), 5000);
+        }
+
+        // -- HERO BACKGROUND --
+        const heroCanvas = document.getElementById('hero-canvas');
+        const hCtx = heroCanvas.getContext('2d');
+        let heroStars = [];
+        function initHero() {
+            heroCanvas.width = window.innerWidth; heroCanvas.height = window.innerHeight;
+            heroStars = Array.from({length: 80}, () => ({ x: Math.random()*heroCanvas.width, y: Math.random()*heroCanvas.height, s: Math.random()*1.5, v: Math.random()*0.3+0.1 }));
+        }
         function animateHero() {
             hCtx.clearRect(0,0,heroCanvas.width, heroCanvas.height);
-            heroParticles.forEach(p => {
-                p.y -= p.v; if(p.y < 0) p.y = heroCanvas.height;
-                hCtx.fillStyle = 'rgba(212, 175, 55, 0.4)';
-                hCtx.beginPath(); hCtx.arc(p.x, p.y, p.s, 0, Math.PI*2); hCtx.fill();
-            });
+            heroStars.forEach(s => { s.y -= s.v; if(s.y<0) s.y = heroCanvas.height; hCtx.fillStyle = 'rgba(212,175,55,0.3)'; hCtx.beginPath(); hCtx.arc(s.x, s.y, s.s, 0, Math.PI*2); hCtx.fill(); });
             requestAnimationFrame(animateHero);
         }
 
-        // -- DIYA ENGINE --
+        // -- DIYA GRID --
         const diyaCanvas = document.getElementById('diya-canvas');
         const dCtx = diyaCanvas.getContext('2d');
-        const COLS = 10, ROWS = 5;
-        const CELL_W = 100, CELL_H = 120;
-        let dMouseX = -1000, dMouseY = -1000, scaleFactor = 1;
-
+        const COLS = 10, ROWS = 5, CELL_W = 100, CELL_H = 120;
+        let dScale = 1;
         function initDiya() {
-            const width = COLS * CELL_W; const height = ROWS * CELL_H;
-            scaleFactor = Math.min(1, (window.innerWidth * 0.95) / width);
-            diyaCanvas.width = width * scaleFactor; diyaCanvas.height = height * scaleFactor;
-            dCtx.scale(scaleFactor, scaleFactor);
+            const w = COLS*CELL_W, h = ROWS*CELL_H;
+            dScale = Math.min(1, (window.innerWidth*0.9)/w);
+            diyaCanvas.width = w*dScale; diyaCanvas.height = h*dScale;
+            dCtx.scale(dScale, dScale);
         }
-
-        diyaCanvas.addEventListener('mousemove', e => {
-            const r = diyaCanvas.getBoundingClientRect();
-            dMouseX = (e.clientX - r.left) / scaleFactor;
-            dMouseY = (e.clientY - r.top) / scaleFactor;
-        });
-
-        function drawDiya(x, y, time, i) {
+        function drawDiya(x, y, t, idx) {
             const cx = x + CELL_W/2, cy = y + CELL_H/2 + 20;
-            const dist = Math.sqrt((dMouseX - cx)**2 + (dMouseY - cy)**2);
-            const flicker = Math.sin(time * 0.01 + i) * 4;
-            const isSpecial = (i === 49); // The 50th Diya (index 49)
-
-            dCtx.save();
-            dCtx.translate(cx, cy);
-
-            if (isSpecial) {
-                dCtx.save();
-                dCtx.rotate(time * 0.002);
-                const ringScale = 1 + Math.sin(time * 0.005) * 0.1;
-                dCtx.scale(ringScale, ringScale);
-                dCtx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
-                dCtx.setLineDash([5, 15]);
-                dCtx.lineWidth = 2;
-                dCtx.beginPath();
-                dCtx.arc(0, -10, 45, 0, Math.PI * 2);
-                dCtx.stroke();
-                dCtx.restore();
-
-                const aura = dCtx.createRadialGradient(0, 0, 0, 0, 0, 60);
-                aura.addColorStop(0, 'rgba(255, 215, 0, 0.4)');
-                aura.addColorStop(0.5, 'rgba(212, 175, 55, 0.2)');
-                aura.addColorStop(1, 'rgba(212, 175, 55, 0)');
-                dCtx.fillStyle = aura;
-                dCtx.beginPath();
-                dCtx.arc(0, -10, 50 + flicker, 0, Math.PI*2);
-                dCtx.fill();
-                
-                dCtx.fillStyle = 'rgba(212, 175, 55, 0.8)';
-                dCtx.font = '12px Cinzel Decorative';
-                dCtx.textAlign = 'center';
-                dCtx.fillText('50', 0, -50 + flicker);
-
-                if(dist < 60 && Math.random() > 0.7) {
-                    createExplosion(cx * scaleFactor, cy * scaleFactor, 2);
-                }
-            }
-
-            dCtx.beginPath();
-            dCtx.ellipse(0, 5, isSpecial ? 25 : 20, 5, 0, 0, Math.PI*2);
-            dCtx.fillStyle = 'rgba(0,0,0,0.4)';
-            dCtx.fill();
-
-            dCtx.beginPath(); dCtx.moveTo(isSpecial ? -28 : -22, -2);
-            dCtx.bezierCurveTo(isSpecial ? -28 : -22, 15, isSpecial ? 28 : 22, 15, isSpecial ? 28 : 22, -2); dCtx.closePath();
-            dCtx.fillStyle = isSpecial ? '#8a6d3b' : '#5d2306'; 
-            dCtx.fill();
-            if(isSpecial) {
-                dCtx.strokeStyle = 'var(--gold-mid)';
-                dCtx.lineWidth = 2;
-                dCtx.stroke();
-            }
-
-            dCtx.translate(0, -15);
-            const fw = isSpecial ? 14 : 8; 
-            const fh = (isSpecial ? 30 : 18) + flicker;
-            
-            dCtx.beginPath(); dCtx.moveTo(0, -fh);
-            dCtx.bezierCurveTo(fw, -fh/2, fw, 0, 0, 2);
-            dCtx.bezierCurveTo(-fw, 0, -fw, -fh/2, 0, -fh);
-            const fg = dCtx.createLinearGradient(0, -fh, 0, 2);
-            fg.addColorStop(0, '#fff'); 
-            fg.addColorStop(0.4, isSpecial ? '#ffcf40' : '#ff9d00');
-            fg.addColorStop(1, '#ff5f00');
-            dCtx.fillStyle = fg; dCtx.fill();
-
-            if(isSpecial) {
-                dCtx.beginPath();
-                dCtx.arc(0, 0, 4, 0, Math.PI*2);
-                dCtx.fillStyle = 'rgba(0, 150, 255, 0.6)';
-                dCtx.fill();
-                
-                dCtx.shadowBlur = 20;
-                dCtx.shadowColor = "rgba(255, 207, 64, 1)";
-            }
-
-            dCtx.restore();
+            const flicker = Math.sin(t*0.01 + idx)*3;
+            const is50 = (idx === 49);
+            dCtx.save(); dCtx.translate(cx, cy);
+            dCtx.beginPath(); dCtx.ellipse(0, 5, is50?25:20, 5, 0, 0, Math.PI*2); dCtx.fillStyle='rgba(0,0,0,0.4)'; dCtx.fill();
+            dCtx.beginPath(); dCtx.moveTo(is50?-28:-22, -2); dCtx.bezierCurveTo(is50?-28:-22, 15, is50?28:22, 15, is50?28:22, -2); dCtx.fillStyle=is50?'#8a6d3b':'#5d2306'; dCtx.fill();
+            const fh = (is50?28:18)+flicker; const fw = is50?12:8; dCtx.translate(0, -15);
+            dCtx.beginPath(); dCtx.moveTo(0, -fh); dCtx.bezierCurveTo(fw, -fh/2, fw, 0, 0, 2); dCtx.bezierCurveTo(-fw, 0, -fw, -fh/2, 0, -fh);
+            const g = dCtx.createLinearGradient(0,-fh,0,2); g.addColorStop(0,'#fff'); g.addColorStop(0.5,'#ffcf40'); g.addColorStop(1,'#ff5f00');
+            dCtx.fillStyle=g; dCtx.fill(); dCtx.restore();
+        }
+        function animateDiyaGrid(t) {
+            dCtx.save(); dCtx.setTransform(1,0,0,1,0,0); dCtx.clearRect(0,0,diyaCanvas.width, diyaCanvas.height); dCtx.restore();
+            let idx = 0; for(let r=0; r<ROWS; r++){ for(let c=0; c<COLS; c++){ drawDiya(c*CELL_W, r*CELL_H, t, idx++); }}
+            requestAnimationFrame(animateDiyaGrid);
         }
 
-        function animateDiyaSystem(time) {
-            dCtx.save(); dCtx.setTransform(1,0,0,1,0,0);
-            dCtx.clearRect(0,0,diyaCanvas.width, diyaCanvas.height); dCtx.restore();
-            let i = 0;
-            for(let r=0; r<ROWS; r++) { for(let c=0; c<COLS; c++) { drawDiya(c * CELL_W, r * CELL_H, time, i); i++; } }
-            requestAnimationFrame(animateDiyaSystem);
-        }
-
-        function launchCelebration(e) {
-            const overlay = document.getElementById('legacy-overlay');
-            overlay.classList.add('active');
-            
-            // Trigger Parents Legacy Effect
-            const midX = window.innerWidth / 2;
-            const midY = window.innerHeight / 2;
-            
-            progenitorStars = [
-                { x: 0, y: window.innerHeight, targetX: midX, targetY: midY, color: '#f9e29f' },
-                { x: window.innerWidth, y: window.innerHeight, targetX: midX, targetY: midY, color: '#d4af37' }
-            ];
-
-            setTimeout(() => {
-                const startX = window.innerWidth / 2;
-                const startY = window.innerHeight;
-                for(let j=0; j<12; j++) {
-                    setTimeout(() => {
-                        createExplosion(startX + (Math.random()-0.5)*800, startY - 200 - Math.random()*500, 80);
-                    }, j * 250);
-                }
-            }, 1000);
-
-            setTimeout(() => {
-                overlay.classList.remove('active');
-            }, 5000);
-        }
-
-        const obs = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('visible')), {threshold: 0.5});
-        document.querySelectorAll('.poem-line').forEach(l => obs.observe(l));
-
-        window.onload = () => { initHero(); animateHero(); initDiya(); requestAnimationFrame(animateDiyaSystem); };
+        window.onload = () => { initHero(); animateHero(); initDiya(); animateDiyaGrid(0); animateMagicSystem(0); };
         window.onresize = () => { initHero(); initDiya(); resizeMagic(); };
-        window.addEventListener('scroll', () => {
-            const scrolled = window.scrollY;
-            const heroContent = document.querySelector('.hero-content');
-            if (heroContent) {
-                heroContent.style.transform = `translateY(${scrolled * 0.4}px)`;
-                heroContent.style.opacity = 1 - (scrolled / 600);
+        
+        const obs = new IntersectionObserver(es => es.forEach(e => {
+            if(e.isIntersecting) {
+                e.target.classList.add('visible');
+                // Section ripple on intersection
+                magicRipples.push({ x: window.innerWidth/2, y: window.innerHeight/2, r: 0, alpha: 0.4, speed: 12 });
             }
-        });
+        }), {threshold: 0.2});
+        document.querySelectorAll('.poem-line, .diya-container, .footer').forEach(l => obs.observe(l));
     </script>
 </body>
 </html>
